@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hive-schema-init
+spec:
+  template:
+    metadata:
+      labels:
+        app: hive-schema-init
+    spec:
+      containers:
+      - name: hive-schema-init
+        image: unnikrishnan262/hive-schema-init:latest
+        env:
+          - name: S3_ENDPOINT
+            value: "10.21.236.205"
+          - name: HIVE_POSTGRES_URL
+            value: "jdbc:postgresql://hivems-primary.analytics.svc:5432"
+          - name: HIVE_POSTGRES_USERNAME
+            value: "hiveuser"
+          - name: schema_name
+            value: "metastore"
+          - name: HIVE_POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: aws-secret
+                key: HIVE_POSTGRES_PASSWORD
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          /opt/hive/bin/schematool --verbose -initSchema -dbType postgres \
+          -driver org.postgresql.Driver -userName "$HIVE_POSTGRES_USERNAME" -passWord "$HIVE_POSTGRES_PASSWORD" \
+          -url "$HIVE_POSTGRES_URL/$schema_name?user=$HIVE_POSTGRES_USERNAME&password=$HIVE_POSTGRES_PASSWORD&createDatabaseIfNotExist=true"
+      restartPolicy: Never
+
+      

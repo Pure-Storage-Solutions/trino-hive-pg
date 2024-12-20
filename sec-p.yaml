@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hivems-pguser-postgres
+  labels:
+    postgres-operator.crunchydata.com/cluster: hivems
+    postgres-operator.crunchydata.com/pguser: postgres
+stringData:
+  password: hive123
+
